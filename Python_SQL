@@ -1,0 +1,108 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import io
+
+# 1. Defining the dataset manually to avoid file path errors
+data = """Warehouse_ID,City,Energy_Cosumption_Kwh,Transportation_Mode,Distance_KM,Carbon_Emission_KG_Per_KM
+WH001,Berlin,4500,Electric,120,0.05
+WH002,London,6200,Diesel,350,0.25
+WH003,Paris,3800,Electric,90,0.05
+WH004,Madrid,7100,Diesel,420,0.25
+WH005,Rome,5500,Hybrid,210,0.12
+WH006,Berlin,4800,Electric,150,0.05
+WH007,London,6900,Diesel,380,0.25
+WH008,Paris,4100,Hybrid,110,0.12
+WH009,Madrid,7500,Diesel,500,0.25
+WH0010,Rome,5200,Electric,180,0.05"""
+
+# 2. Loading the data into a DataFrame
+df = pd.read_csv(io.StringIO(data))
+
+# 3. Calculating Total Carbon Footprint (Distance * Emission Factor)
+df['Total_Carbon_Footprint'] = df['Distance_KM'] * df['Carbon_Emission_KG_Per_KM']
+
+# 4. Displaying the analysis summary
+summary = df.groupby('Transportation_Mode')[['Energy_Cosumption_Kwh', 'Total_Carbon_Footprint']].mean()
+print("-- Sustainability Analysis Summary ---")
+print(summary)
+
+# 5. Visualizing the results
+plt.figure(figsize=(8, 5))
+summary['Total_Carbon_Footprint'].plot(kind='bar', color='skyblue', edgecolor='black')
+plt.title('Average Carbon Footprint per Transportation Mode')
+plt.xlabel('Transportation Mode')
+plt.ylabel('Average Carbon Emissions (KG)')
+plt.xticks(rotation=0)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.show()
+
+import pandas as pd
+# pandasql kütüphanesi yüklü değilse, buradan yüklüyoruz.
+!pip install pandasql
+from pandasql import sqldf
+
+# 1. Veriyi tanımlayalım (Daha önce oluşturduğumuz DataFrame 'df')
+# df = pd.read_csv(...) # Verinin zaten yüklü olduğunu varsayıyoruz
+
+# 2. SQL sorgumuzu yazalım
+# Bu sorgu, taşıma moduna göre ortalama enerji tüketimi ve karbon ayak izini hesaplar
+query = """
+SELECT
+    Transportation_Mode,
+    AVG(Energy_Cosumption_Kwh) AS Avg_Energy_Usage,
+    AVG(Distance_KM * Carbon_Emission_KG_Per_KM) AS Avg_Total_Carbon_Footprint
+FROM df
+GROUP BY Transportation_Mode
+"""
+
+# 3. Sorguyu çalıştıralım
+result = sqldf(query, locals())
+
+# 4. Sonucu yazdıralım
+print("--- SQL-Based Sustainability Analysis ---")
+print(result)
+
+
+
+
+
+
+
+
+ -- Sustainability Analysis Summary ---
+                     Energy_Cosumption_Kwh  Total_Carbon_Footprint
+Transportation_Mode                                               
+Diesel                              6925.0                 103.125
+Electric                            4575.0                   6.750
+Hybrid                              4800.0                  19.200
+Collecting pandasql
+  Downloading pandasql-0.7.3.tar.gz (26 kB)
+  Preparing metadata (setup.py) ... done
+Requirement already satisfied: numpy in /usr/local/lib/python3.12/dist-packages (from pandasql) (2.0.2)
+Requirement already satisfied: pandas in /usr/local/lib/python3.12/dist-packages (from pandasql) (2.2.2)
+Requirement already satisfied: sqlalchemy in /usr/local/lib/python3.12/dist-packages (from pandasql) (2.0.51)
+Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.12/dist-packages (from pandas->pandasql) (2.9.0.post0)
+Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.12/dist-packages (from pandas->pandasql) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.12/dist-packages (from pandas->pandasql) (2026.2)
+Requirement already satisfied: greenlet>=1 in /usr/local/lib/python3.12/dist-packages (from sqlalchemy->pandasql) (3.5.2)
+Requirement already satisfied: typing-extensions>=4.6.0 in /usr/local/lib/python3.12/dist-packages (from sqlalchemy->pandasql) (4.15.0)
+Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.12/dist-packages (from python-dateutil>=2.8.2->pandas->pandasql) (1.17.0)
+Building wheels for collected packages: pandasql
+  Building wheel for pandasql (setup.py) ... done
+  Created wheel for pandasql: filename=pandasql-0.7.3-py3-none-any.whl size=26773 sha256=2b94bd0fac26d53b5d62c879e924d2ca22f67af85cdc8628f34c16d95aad1f14
+  Stored in directory: /root/.cache/pip/wheels/15/a1/e7/6f92f295b5272ae5c02365e6b8fa19cb93f16a537090a1cf27
+Successfully built pandasql
+Installing collected packages: pandasql
+Successfully installed pandasql-0.7.3
+--- SQL-Based Sustainability Analysis ---
+  Transportation_Mode  Avg_Energy_Usage  Avg_Total_Carbon_Footprint
+0              Diesel            6925.0                     103.125
+1            Electric            4575.0                       6.750
+2              Hybrid            4800.0                      19.200
+
+
+
+
+
+
+
